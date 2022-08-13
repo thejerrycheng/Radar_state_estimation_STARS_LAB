@@ -37,26 +37,45 @@ A_theta_filtered = atan(A_tan_filtered);
 
 % interval = 5; % interval in degrees of interval for each divided area 
                 % interval*pi/180 in radians 
-max_num = 1;
+% max_num = 1;
 number_of_area = (pi - 2*atan(fov_tan))/(interval*pi/180);
  
 point_size = size(A);
 
 down_bound = -90 + fov_tan*180/pi;
 up_bound = down_bound + interval;
+% A_temp = ones(1,2);
+% y_temp = ones(1,2);
+
 
 for num = 1:number_of_area % ititerate for number of area times 
-    
+
     valid_num = 0;
     down_bound = down_bound + interval;
     up_bound = down_bound + interval;
+    k = 1;
+    A_temp = [];
+    y_temp = [];
+   
 
     for j = 1:point_size 
-        if (A_theta_filtered(j) > down_bound) && (A_theta_filtered(j) < up_bound) && valid_num < 1
-            A_filtered(num,:) = A(j,:);
-            y_filtered(num,:) = y(j,:);
-            valid_num = 1;
-            break;
+        if (A_theta_filtered(j) > down_bound) && (A_theta_filtered(j) < up_bound)
+            A_temp(k,:) = A(j,:);
+            y_temp(k,:) = y(j,:);
+%             valid_num = 1;
+%             break;
+            k = k+1;
+        end 
+    end 
+    distance = (range_x_filtered).^2 + (range_y_filtered).^2;
+
+    for m = 1:k-1
+%         distance(m) = A_temp(m,1)^2 + A_temp(m,2)^2;
+        min_distance = min(distance);
+        if distance(m) == min_distance
+            min_indice = m;
+            A_filtered = A_temp(m,:);
+            y_filtered = y_temp(m,:);
         end 
     end 
 
@@ -64,5 +83,7 @@ end
 
 y_new = y_filtered;
 A_new = A_filtered;
+
+% 
 
 end 
