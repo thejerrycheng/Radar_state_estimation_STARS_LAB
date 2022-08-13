@@ -32,7 +32,7 @@ for i = 1:total_frame(1)
     [y_new{i}, A_new{i}] = filter_data(y{i}, A{i}, range_x{i}, range_y{i});
    
     %% Solving the Equation Using RANSAC 
-    [x{i}, invalid_frames{i},range_x_in{i}, range_y_in{i}, vel_in{i}]= ransac_solver(y_new{i},A_new{i});
+    [x{i}, invalid_frames{i},range_x_in{i}, range_y_in{i}, vel_in{i}, error{i}]= ransac_solver(y_new{i},A_new{i});
     
     x_vel_init{i} = x{i}(1);
     y_vel_init{i} = x{i}(2);
@@ -50,6 +50,7 @@ for i = 1:total_frame(1)
         x_new{j} = x{i};
         y_new_new{j} = y_new{i};
         A_new_new{j} = A_new{i};
+        error_new{j} = error{i};
         mag_vel_new = sqrt(x_velmat.^2+y_velmat.^2);
         j = j+1;
     end 
@@ -73,3 +74,9 @@ time_stamp = time_stamp_new;
 mag_vel = mag_vel_new;
 
 end
+
+
+
+
+
+

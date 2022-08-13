@@ -1,4 +1,4 @@
-function [x, invalid_frames, range_x_in, range_y_in, vel_in]= ransac_solver(y,A)
+function [x, invalid_frames, range_x_in, range_y_in, vel_in, error]= ransac_solver(y,A)
 % y as a N*1 vector; A as a N*2 matrix 
 % output the linear equation solution using RANSAC to filter out the
 % outliers; x as a 2*1 vector 
@@ -36,6 +36,12 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in]= ransac_solver(y,A)
         first_batch_A = A(indices, :); 
         %Check theta between vectors
         if abs(acos(first_batch_A(1, :) * first_batch_A(2, :)')) < 0.1
+            x = zeros(2,1);
+            invalid_frames = invalid_frames + 1;
+            range_x_in = 0;
+            range_y_in = 0;
+            vel_in = 0;
+            error = 0;
             continue
         end
         Sigma_first_batch = 1/(sigma_v^2)*eye(init_num,init_num);
@@ -54,6 +60,7 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in]= ransac_solver(y,A)
             range_x_in = A_final(:,1);
             range_y_in = A_final(:,2);
             vel_in = y;
+            error = double(y - A*x); % added error calculation for plotting purposes 
             break
 
         else 
@@ -62,10 +69,14 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in]= ransac_solver(y,A)
             range_x_in = 0;
             range_y_in = 0;
             vel_in = 0;
+            error = 0; % else case when there is no solution 
         % do nothing 
         end 
         iteration_num = iteration_num + 1;
     end
+
+
+
 end
 
 
