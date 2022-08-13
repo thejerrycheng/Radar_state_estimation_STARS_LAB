@@ -25,7 +25,7 @@ figure
 tiledlayout(3,1);
 
 nexttile
-plot(odom_time, rotated_x);
+plot(odom_time, rotated_x); 
 hold on; 
 plot(t5, vel_x5);
 plot(t5, vel_x5 + uncertainty5(:, 1)', '-r', t5, vel_x5 - uncertainty5(:, 1)', '-r')
