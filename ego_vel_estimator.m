@@ -1,9 +1,15 @@
-function [x_velmat,y_velmat,mag_vel,total_frame,uncertainty, time_stamp, time, C] = ego_vel_estimator(radar_struct)
+function [x_velmat,y_velmat,mag_vel,total_frame,uncertainty, time_stamp, time, C, range_x_in, range_y_in, vel_in] = ego_vel_estimator(radar_struct)
 
 total_frame = size(radar_struct);
 
+%% construct the struct data varialble for this radar 
+data = struct();
+data.total_frame = total_frame(1);
+
+j = 1;
+
 %% data captured by radar1: 
-for i = 1:total_frame(1)
+for i = 1:data.total_frame
     height{i} = radar_struct{i}.Height;
     width{i} = radar_struct{i}.Width;
     pointstep{i} = radar_struct{i}.PointStep; 
@@ -15,11 +21,8 @@ for i = 1:total_frame(1)
     range_y{i} = rosReadField(radar_struct{i},"y");
     vel_rad{i} = rosReadField(radar_struct{i},"vel_rad"); 
 
-end 
 
-j = 1;
 
-for i = 1:total_frame(1)
     %% Getting y Vector and Normalized A Matrix
     A_vector{i} = cell2mat({range_x{i}, range_y{i}});
     A_vector_normalized{i} = A_vector{i}./repmat(vecnorm(A_vector{i}, 2, 2), 1, 2); % nomalization 
@@ -40,6 +43,8 @@ for i = 1:total_frame(1)
     y_velmat_init = cell2mat(y_vel_init);
     mag_vel_init = sqrt(x_velmat_init.^2+y_velmat_init.^2);
 
+
+    %% getting rid of the non solution time frames 
     if mag_vel_init(i) ~= 0 && mag_vel_init(i) < 7
         x_vel{j} = x_vel_init{i};
         y_vel{j} = y_vel_init{i};
@@ -58,6 +63,22 @@ end
 
 
 
+
+
+data.range_x = range_x;
+data.range_y = range_y;
+data.range_x_in = range_x_in;
+data.range_y_in = ragne_y_in;
+data.vel_rad = vel_rad;
+data.vel_in = vel_in;
+data.y = y;
+data.y_new = y_new;
+data.A = A;
+data.A_new = A_new;
+data.error = error;
+data.x_velmat = x_velmat;
+data.y_velmat = y_velmat;
+
 total_frame = j-1;
 uncertainty = zeros(total_frame,2);
 
@@ -72,6 +93,11 @@ end
 time = time_new;
 time_stamp = time_stamp_new;
 mag_vel = mag_vel_new;
+
+data.C = C;
+data.time_stamp = time_stamp;
+data.time = time;
+data.uncertainty = uncertainty;
 
 end
 
