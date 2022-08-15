@@ -1,10 +1,11 @@
-function [x_velmat,y_velmat,mag_vel,total_frame,uncertainty, time_stamp, time, C, range_x_in, range_y_in, vel_in] = ego_vel_estimator(radar_struct)
+function [data] = ego_vel_estimator(radar_struct)
 
 total_frame = size(radar_struct);
 
 %% construct the struct data varialble for this radar 
 data = struct();
 data.total_frame = total_frame(1);
+data.index = [1:1:data.total_frame];
 
 j = 1;
 
@@ -21,8 +22,6 @@ for i = 1:data.total_frame
     range_y{i} = rosReadField(radar_struct{i},"y");
     vel_rad{i} = rosReadField(radar_struct{i},"vel_rad"); 
 
-
-
     %% Getting y Vector and Normalized A Matrix
     A_vector{i} = cell2mat({range_x{i}, range_y{i}});
     A_vector_normalized{i} = A_vector{i}./repmat(vecnorm(A_vector{i}, 2, 2), 1, 2); % nomalization 
@@ -35,14 +34,13 @@ for i = 1:data.total_frame
     [y_new{i}, A_new{i}] = filter_data(y{i}, A{i}, range_x{i}, range_y{i});
    
     %% Solving the Equation Using RANSAC 
-    [x{i}, invalid_frames{i},range_x_in{i}, range_y_in{i}, vel_in{i}, error{i}]= ransac_solver(y_new{i},A_new{i});
+    [x{i}, invalid_frames{i}, range_x_in{i}, range_y_in{i}, vel_in{i}, error{i}, error_in{i}]= ransac_solver(y_new{i},A_new{i}, range_x{i}, range_y{i});
     
     x_vel_init{i} = x{i}(1);
     y_vel_init{i} = x{i}(2);
     x_velmat_init = cell2mat(x_vel_init);
     y_velmat_init = cell2mat(y_vel_init);
     mag_vel_init = sqrt(x_velmat_init.^2+y_velmat_init.^2);
-
 
     %% getting rid of the non solution time frames 
     if mag_vel_init(i) ~= 0 && mag_vel_init(i) < 7
@@ -56,48 +54,56 @@ for i = 1:data.total_frame
         y_new_new{j} = y_new{i};
         A_new_new{j} = A_new{i};
         error_new{j} = error{i};
+        error_in_new{j} = error_in{i};
+        range_x_in_new{j} = range_x_in{i};
+        range_y_in_new{j} = range_y_in{i};
+        range_x_new{j} = range_x{i};
+        range_y_new{j} = range_y{i};
         mag_vel_new = sqrt(x_velmat.^2+y_velmat.^2);
         j = j+1;
     end 
 end
 
+time = time_new;
+time_stamp = time_stamp_new;
+mag_vel = mag_vel_new;
 
-
-
-
-data.range_x = range_x;
-data.range_y = range_y;
-data.range_x_in = range_x_in;
-data.range_y_in = ragne_y_in;
-data.vel_rad = vel_rad;
-data.vel_in = vel_in;
-data.y = y;
-data.y_new = y_new;
+data.range_x = range_x; %OG
+data.range_y = range_y; %OG
+data.range_x_in = range_x_in; % after the ransac filter 
+data.range_y_in = range_y_in; % after the ransac filter 
+data.range_x_in_new = range_x_in_new;
+data.range_y_in_new = range_y_in_new;
+data.vel_rad = vel_rad; %OG
+data.vel_in = vel_in; % after the ransac filter 
+data.y = y; 
+data.y_new = y_new; % after the filter function 
 data.A = A;
-data.A_new = A_new;
-data.error = error;
+data.A_new = A_new; % after the filter function 
 data.x_velmat = x_velmat;
 data.y_velmat = y_velmat;
+data.mag_vel = mag_vel; 
+data.error = error; % before the filtering -- added zero solution time frames
+data.error_in = error_in; 
+data.error_new = error_new; % after ransac filter -- with only the solutions 
+data.error_in_new = error_in_new; 
+% data.fit_indices = fit_indices;
 
 total_frame = j-1;
 uncertainty = zeros(total_frame,2);
 
 for j = 1:total_frame
-
     %% Uncertainty Calculation:
     [C{j},dim{j},error{j}] = uncertainty_cal(x_new{j},y_new_new{j},A_new_new{j});
     uncertainty(j, :) = 3 *sqrt(diag(C{j}));
-
 end 
-
-time = time_new;
-time_stamp = time_stamp_new;
-mag_vel = mag_vel_new;
 
 data.C = C;
 data.time_stamp = time_stamp;
 data.time = time;
 data.uncertainty = uncertainty;
+
+% plot_function(odom_time, rotated_x, rotated_y, vel_x,vel_y,mag_vel,total_frame,uncertainty,time_stamp, time, C)
 
 end
 

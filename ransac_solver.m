@@ -1,4 +1,4 @@
-function [x, invalid_frames, range_x_in, range_y_in, vel_in, error]= ransac_solver(y,A)
+function [x, invalid_frames, range_x_in, range_y_in, vel_in, error, error_in]= ransac_solver(y, A, range_x, range_y)
 % y as a N*1 vector; A as a N*2 matrix 
 % output the linear equation solution using RANSAC to filter out the
 % outliers; x as a 2*1 vector 
@@ -24,7 +24,6 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in, error]= ransac_solv
     x_first_batch = (first_batch_A'*Sigma_first_batch*first_batch_A)\(first_batch_A'*Sigma_first_batch*first_batch_y); 
     remain_num = total_num - init_num; 
 
-
  %% iterate the guess function 
  iteration_num = 0;
  invalid_frames = 0;
@@ -42,6 +41,7 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in, error]= ransac_solv
             range_y_in = 0;
             vel_in = 0;
             error = 0;
+            error_in = 0;
             continue
         end
         Sigma_first_batch = 1/(sigma_v^2)*eye(init_num,init_num);
@@ -55,12 +55,15 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in, error]= ransac_solv
             Sigma_first_batch = 1/(sigma_v^2)*eye(size(fit_indices,1),size(fit_indices,1));
             A_final = A(fit_indices, :);
             y_final = y(fit_indices, :);
+            range_x_in = range_x(fit_indices, :);
+            range_y_in = range_y(fit_indices, :);
             x_final_batch = (A_final'*Sigma_first_batch*A_final)\(A_final'* Sigma_first_batch * y_final);
             x = cast(x_final_batch,"double"); 
-            range_x_in = A_final(:,1);
-            range_y_in = A_final(:,2);
+%             range_x_in = A_final(:,1);
+%             range_y_in = A_final(:,2);
             vel_in = y;
             error = double(y - A*x); % added error calculation for plotting purposes 
+            error_in = double(y_final - A_final*x); % error for the inliners for plotting purposes 
             break
 
         else 
@@ -70,12 +73,11 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in, error]= ransac_solv
             range_y_in = 0;
             vel_in = 0;
             error = 0; % else case when there is no solution 
+            error_in = 0;
         % do nothing 
         end 
         iteration_num = iteration_num + 1;
     end
-
-
 
 end
 

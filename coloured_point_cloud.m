@@ -1,6 +1,7 @@
-function coloured_point_cloud(range_x, range_y, error, time_frame)
+function coloured_point_cloud(range_x, range_x_in, range_y, range_y_in, error, error_in, time_frame)
 
 num_points = size(error);
+num_inlier_points = size(error_in);
 
 a = 1;
 b = 1;
@@ -24,6 +25,21 @@ range_x_6 = [];
 range_y_6 = [];
 range_x_7 = [];
 range_y_7 = [];
+
+% range_x_in_1 = [];
+% range_y_in_1 = [];
+% range_x_in_2 = [];
+% range_y_in_2 = [];
+% range_x_in_3 = [];
+% range_y_in_3 = [];
+% range_x_in_4 = [];
+% range_y_in_4 = [];
+% range_x_in_5 = [];
+% range_y_in_5 = [];
+% range_x_in_6 = [];
+% range_y_in_6 = [];
+% range_x_in_7 = [];
+% range_y_in_7 = [];
 
 for i = 1:num_points(1)
 
@@ -100,6 +116,9 @@ plot(range_x_6, range_y_6, '.','Color',color(6,:),'MarkerSize',20);
 hold on;
 plot(range_x_7, range_y_7, '.','Color',color(7,:),'MarkerSize',20);
 hold on;
+plot(range_x_in, range_y_in, 'o', 'MarkerSize',20);
+hold on; 
+
 title(sprintf('Point Cloud Color Graded at Time Frame %d', time_frame));
 colormap(jet(7))
 set(gca,'CLim',[4 11])
