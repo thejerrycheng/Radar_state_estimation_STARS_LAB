@@ -16,8 +16,8 @@ if total_num > 2
     init_num = 2; % the initial guess's number of samples selected 
     iteration = log(1-P)/log(1-e^init_num);
     sigma_v = 0.1; % m/s -- assumed arbitary number -- to be changed later 
-    threshold = 0.05; 
-    min_inliners = round(total_num*0.12);
+    threshold = 0.1; 
+    min_inliners = round(total_num*0.35);
 
 %% first initial guess 
     first_batch_y = y(1:init_num, :);

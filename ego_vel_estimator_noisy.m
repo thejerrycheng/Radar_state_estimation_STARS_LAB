@@ -1,4 +1,4 @@
-function [data] = ego_vel_estimator(radar_struct, odom_time_stamps, rotated_x, rotated_y)
+function [data] = ego_vel_estimator_noisy(radar_struct, odom_time_stamps, rotated_x, rotated_y)
 
 total_frame = size(radar_struct);
 
@@ -102,6 +102,14 @@ data.C = C;
 data.time_stamp = time_stamp;
 data.time = time;
 data.uncertainty = uncertainty;
+
+% added hampel filter to further eliminate the outliers 
+
+windowSize = 20;
+numMedians = 2;
+[data.hampel,outliers]=hampel(data.mag_vel,windowSize,numMedians);
+[data.hampel_x,outliers_x]=hampel(data.x_velmat,windowSize,numMedians);
+[data.hampel_y,outliers_y]=hampel(data.y_velmat,windowSize,numMedians);
 
 plot_function(odom_time_stamps, rotated_x, rotated_y, data);
 

@@ -103,7 +103,16 @@ data.time_stamp = time_stamp;
 data.time = time;
 data.uncertainty = uncertainty;
 
-plot_function(odom_time_stamps, rotated_x, rotated_y, data5);end
+% added hampel filter to further eliminate the outliers 
+
+windowSize = 20;
+numMedians = 2;
+[data.hampel,outliers]=hampel(data.mag_vel,windowSize,numMedians);
+
+
+plot_function(odom_time_stamps, rotated_x, rotated_y, data);
+
+end
 
 
 
