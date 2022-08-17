@@ -7,7 +7,9 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in, error, error_in]= r
     [total_num,col] = size(y);
 
 %% normalization 
+invalid_frames = 0;
 
+if total_num > 2
 %% the hyperparameters: 
     P = 0.95;
     e = 0.1;
@@ -26,7 +28,7 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in, error, error_in]= r
 
  %% iterate the guess function 
  iteration_num = 0;
- invalid_frames = 0;
+
     for i = 1:1000 
         inliners_num = 0;
         indices = randsample(total_num,init_num);
@@ -78,6 +80,18 @@ function [x, invalid_frames, range_x_in, range_y_in, vel_in, error, error_in]= r
         end 
         iteration_num = iteration_num + 1;
     end
+
+
+else
+    x = zeros(2,1);
+    invalid_frames = invalid_frames + 1;
+    range_x_in = 0;
+    range_y_in = 0;
+    vel_in = 0;
+    error = 0; % else case when there is no solution 
+    error_in = 0;
+
+end 
 
 end
 

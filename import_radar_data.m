@@ -1,4 +1,4 @@
-function [odom_time, rotated_linear, ...
+function [odom_time,odom_time_stamps, rotated_linear, ...
     rotated_x, rotated_y, rotated_z, ...
     radar1_struct,radar2_struct,radar3_struct,radar4_struct,radar5_struct]...
     = import_radar_data(file_path)
@@ -37,8 +37,8 @@ function [odom_time, rotated_linear, ...
         orientation_z{i} = odom_struct{i}.Pose.Pose.Orientation.Z;
         orientation_w{i} = odom_struct{i}.Pose.Pose.Orientation.W;
     
-        time_stamps{i} = odom_struct{i}.Header.Stamp.Sec;
-        odom_time{i} = time_stamps{i} - time_stamps{1};
+        odom_time_stamps{i} = double(odom_struct{i}.Header.Stamp.Sec)+1e-9*double(odom_struct{i}.Header.Stamp.Nsec);
+        odom_time{i} = odom_time_stamps{i} - odom_time_stamps{1};
     end 
     
     gt_x = cell2mat(linear_x);

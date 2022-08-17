@@ -1,4 +1,4 @@
-function [data] = ego_vel_estimator(radar_struct)
+function [data] = ego_vel_estimator(radar_struct, odom_time_stamps, rotated_x, rotated_y)
 
 total_frame = size(radar_struct);
 
@@ -103,9 +103,7 @@ data.time_stamp = time_stamp;
 data.time = time;
 data.uncertainty = uncertainty;
 
-% plot_function(odom_time, rotated_x, rotated_y, vel_x,vel_y,mag_vel,total_frame,uncertainty,time_stamp, time, C)
-
-end
+plot_function(odom_time_stamps, rotated_x, rotated_y, data5);end
 
 
 
