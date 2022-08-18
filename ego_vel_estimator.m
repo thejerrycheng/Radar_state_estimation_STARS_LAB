@@ -105,9 +105,11 @@ data.uncertainty = uncertainty;
 
 % added hampel filter to further eliminate the outliers 
 
-windowSize = 20;
-numMedians = 2;
+windowSize = 25;
+numMedians = 1;
 [data.hampel,outliers]=hampel(data.mag_vel,windowSize,numMedians);
+[data.hampel_x,outliers_x]=hampel(data.x_velmat,windowSize,numMedians);
+[data.hampel_y,outliers_y]=hampel(data.y_velmat,windowSize,numMedians);
 
 
 plot_function(odom_time_stamps, rotated_x, rotated_y, data);

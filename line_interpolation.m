@@ -1,4 +1,4 @@
-function [interpolated_data2] = line_interpolation(data1, data2)
+function [time, interpolated_data1, interpolated_data2] = line_interpolation(data1, data2)
 
 % data is struct including the time_stamps and estimated velocity 
 
@@ -7,81 +7,79 @@ function [interpolated_data2] = line_interpolation(data1, data2)
 
 % return the interpolated radar2 data as interpolated_data2
 
-data1_size = size(data1.mag_vel);
-data2_size = size(data2.mag_vel);
 
-data1.type = ones(data1_size);
-data2.type = zeros(data2_size);
+[m, data1_size] = size(data1.mag_vel);
+[m, data2_size] = size(data2.mag_vel);
 
-final_data_size = data1_size;
+data1.type = ones(1,data1_size);
+data2.type = zeros(1,data2_size);
+
 data_total = struct();
 data_total.mag_vel = cat(2, data1.mag_vel, data2.mag_vel);
 data_total.type = cat(2, data1.type, data2.type);
 data_total.time_stamp = cat(2, data1.time_stamp, data2.time_stamp);
 
-[data_total.sorted_mag_vel,idx]=sort(data_total.mag_vel);
+[data_total.sorted_mag_vel,idx]=sort(cell2mat(data_total.time_stamp));
 data_total.sorted_type = data_total.type(idx);
 data_total.sorted_time_stamp = data_total.time_stamp(idx);
-data_total.total_size = data1_size + data2_size;
+data_total.total_size = data1_size;
 
 a = 1;
-b = 1;
+b = 0;
 i = 1;
 j = 1;
 
-for i = 1:data1_size
-    
-    while (data1.mag_vel(a) < data2.mag_vel(b))
-        a = a+1; % mark as the starting location for data1 --> all data from a will be picked 
+% edge case for the starting edge: 
+if cell2mat(data1.time_stamp(1)) < cell2mat(data2.time_stamp(1))
+    while (cell2mat(data1.time_stamp(a)) < cell2mat(data2.time_stamp(1)))
+        a = a+1;
+        fprintf('starting edge case')
     end 
-    target_point = data1.mag_vel(a);
-    target_time = data1.time_stamp(a);
-    b1 = data2.mag_vel(b);
-    time1 = data2.time_stamp(b);
-
-    while (data1.mag_vel(a) > data2.mag_vel(b+1))
+end 
+% edge case for the ending edge: 
+if cell2mat(data1.time_stamp(data1_size)) > cell2mat(data2.time_stamp(data2_size))
+    while (cell2mat(data1.time_stamp(data1_size - b)) > cell2mat(data2.time_stamp(data2_size)))
         b = b+1;
-        b1 = data2.mag_vel(b);
-        time1 = data2.time_stamp(b);
+        fprintf('ending edge case \n' )
+    end
+end 
+
+interpolated_data1 = data1.mag_vel(a:(data1_size - b));
+time = cell2mat(data1.time_stamp(a:(data1_size - b)));
+
+% the total generated points after subtracting the two edge cases: 
+data_total.total_size = data_total.total_size - a - b + 1;
+
+data1_index = a;
+data2_index = 1;
+fprintf('finished the initial processing \n')
+% iterate the interpolated points 
+for i = 1:(data_total.total_size)
+    
+    target_point = data1.mag_vel(data1_index);
+    target_time = cell2mat(data1.time_stamp(data1_index));
+    b1 = data2.mag_vel(data2_index);
+    b2 = (data2.mag_vel(data2_index+1));
+    time1 = cell2mat(data2.time_stamp(data2_index));
+    time2 = cell2mat(data2.time_stamp(data2_index+1));
+
+    while (cell2mat(data1.time_stamp(data1_index)) > cell2mat(data2.time_stamp(data2_index + 1)))
+        data2_index = data2_index + 1;
+        b1 = (data2.mag_vel(data2_index));
+        b2 = (data2.mag_vel(data2_index+1));
+        time1 = cell2mat(data2.time_stamp(data2_index));
+        time2 = cell2mat(data2.time_stamp(data2_index+1));
     end 
-    b2 = data2.mag_vel(b+1);
-    time2 = data2.time_stamp(b+1);
 
     k = (b2 - b1)/(time2 - time1);
-    interpolated_data2() = b1 + k*(target_time - time1);
+    interpolated_data2(i) = b1 + k*(target_time - time1);
+    data1_index = data1_index+1;
+    time_diff1 = target_time - time1;
+    time_diff2 = time2 - target_time; 
 
 end 
 
-% if data_total.sorted_type(1) == 1
-%     while data_total.sorted_type(i) == 1
-%         b1 = data_total.sorted_mag_vel(i);
-%         time2_1 = data_total.sorted_time_stamp(i);
-%         i = i + 1;
-%     end
-% 
-%     
-%     while data_total.sorted_type(i) == 1
-%         b2 = data_total.sorted_mag_vel(i);
-%         time2_2 = data_total.sorted_time_stamp(i);
-%         i = i + 1;
-%     end
-%     
-% else
-%     b1 = data_total.sorted_mag_vel(i);
-%     time2_1 = data_total.sorted_time_stamp(i);
-%     i = i + 1; 
-%     while data_total.sorted_type(i) == 1
-%          b2 = data_total.sorted_mag_vel(i);
-%          time2_2 = data_total.sorted_time_stamp(i);
-%          i = i + 1;
-%     end
-% 
-% end 
-
-k = (data2.mag_vel(j+1) - data2.mag_vel(j))/(data2.time_stamp(j+1) - data2.time-stamp(j));
-interpolated_data2(a) = data2.mag_vel(j) + k*(data1.time_stamp(i) - data2.time_stamp(j));
-
-end
+plotend
 
 
 

@@ -3,7 +3,7 @@ function plot_function(odom_time_stamps, rotated_x, rotated_y, data)
 % t = linspace(0, double(max(odom_time)), double(total_frame(1)));
 %%
 figure 
-tiledlayout(2,1);
+tiledlayout(6,1);
 
 nexttile
 plot (cell2mat(odom_time_stamps),sqrt(rotated_x.^2+rotated_y.^2));
@@ -22,8 +22,8 @@ xlabel('time');
 ylabel('velocity in m/s');
 
 %%
-figure;
-tiledlayout(2,1);
+
+
 
 nexttile
 plot(cell2mat(odom_time_stamps), rotated_x);
@@ -40,9 +40,6 @@ plot(cell2mat(data.time_stamp), data.hampel_x + data.uncertainty(:, 1)', '-r', c
 title('velocity at the x direction');
 
 %%
-figure;
-tiledlayout(2,1);
-
 nexttile
 plot(cell2mat(odom_time_stamps), rotated_y);
 hold on; 
